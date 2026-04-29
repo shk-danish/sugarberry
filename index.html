@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en" x-data="sugarberry()" x-init="init()">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sugarberry 🌸 — Glow Naturally</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            berry: {
+              50: '#fdf2f8', 100: '#fce7f3', 200: '#fbcfe8',
+              300: '#f9a8d4', 400: '#f472b6', 500: '#ec4899',
+              600: '#db2777', 700: '#be185d', 800: '#9d174d', 900: '#831843',
+            },
+            cream: '#FFF9F5', blush: '#FFE8F0',
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            body: ['"DM Sans"', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,.font-display { font-family: 'Playfair Display', serif; }
+    html { scroll-behavior: smooth; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #fdf2f8; }
+    ::-webkit-scrollbar-thumb { background: #f9a8d4; border-radius: 99px; }
+
+    /* Animations */
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pulse-ring { 0%{transform:scale(1);opacity:0.8} 100%{transform:scale(1.4);opacity:0} }
+
+    .float { animation: float 5s ease-in-out infinite; }
+    .fade-up { animation: fadeUp 0.6s ease-out forwards; }
+    .slide-down { animation: slideDown 0.3s ease-out forwards; }
+
+    [x-cloak] { display: none !important; }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #db2777, #ec4899, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Hero overlay */
+    .hero-pattern {
+      background-image: radial-gradient(circle at 20% 80%, rgba(244,114,182,0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(219,39,119,0.1) 0%, transparent 50%);
+    }
+
+    /* Card hover */
+    .product-card:hover .product-img { transform: scale(1.08); }
+    .product-img { transition: transform 0.5s ease; }
+
+    /* Notification */
+    .toast { animation: slideDown 0.3s ease-out; }
+
+    /* Nav link active */
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 2px;
+      background: #ec4899;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Range input */
+    input[type=range] { -webkit-appearance:none; height:4px; border-radius:99px; background:#fbcfe8; outline:none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:#ec4899; cursor:pointer; box-shadow:0 0 0 4px #fce7f3; }
+
+    /* Modal backdrop */
+    .modal-bg { backdrop-filter: blur(4px); }
+
+    /* Tab active */
+    .tab-active { color: #db2777; border-bottom: 2px solid #ec4899; }
+
+    /* Smooth transitions */
+    .page { transition: opacity 0.3s ease; }
+    .page.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+
+<body class="bg-[#FFF9F5] text-gray-800" x-cloak>
+
+<!-- ===================== TOAST ===================== -->
+<div x-show="toast.show" x-transition class="fixed top-20 right-4 z-[999] toast">
+  <div class="bg-white border border-pink-100 shadow-xl rounded-2xl px-5 py-3.5 flex items-center gap-3 min-w-[220px]">
+    <div class="w-8 h-8 rounded-full bg-berry-500 flex items-center justify-center shrink-0">
+      <i data-lucide="check" class="w-4 h-4 text-white"></i>
+    </div>
+    <div>
+      <p class="text-xs font-semibold text-gray-800" x-text="toast.msg"></p>
+      <p class="text-xs text-gray-400">Sugar Berry</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-pink-100 shadow-sm">
+  <!-- Top Strip -->
+  <div class="bg-gradient-to-r from-berry-700 to-berry-500 text-white text-center py-1.5 text-xs tracking-widest">
+    ✨ Free shipping on orders above Rs. 2,500 · Use code <span class="font-bold">GLOW20</span> for 20% off ✨
+  </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <button @click="goPage('home')" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-berry-400 to-berry-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+          <span class="text-white text-sm">🌸</span>
+        </div>
+        <span class="font-display text-2xl text-berry-700">Sugar<span class="text-berry-400">berry</span></span>
+      </button>
+
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex items-center gap-8">
+        <template x-for="link in navLinks" :key="link.page">
+          <button
+            @click="goPage(link.page)"
+            class="nav-link text-sm font-medium transition-colors"
+            :class="currentPage === link.page ? 'text-berry-600 font-semibold' : 'text-gray-500 hover:text-berry-500'"
+            x-text="link.label">
+          </button>
+        </template>
+      </div>
+
+      <!-- Icons -->
+      <div class="flex items-center gap-4">
+        <!-- Search -->
+        <button @click="searchOpen = !searchOpen" class="text-gray-400 hover:text-berry-500 transition-colors">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </button>
+        <!-- Wishlist -->
+        <button @click="goPage('wishlist')" class="relative text-gray-400 hover:text-berry-500 transition-colors">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+          <span x-show="wishlist.length > 0" x-text="wishlist.length"
+            class="absolute -top-2 -right-2 bg-berry-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold"></span>
+        </button>
+        <!-- Cart -->
+        <button @click="goPage('cart')" class="relative text-gray-400 hover:text-berry-500 transition-colors">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span x-show="cartCount > 0" x-text="cartCount"
+            class="absolute -top-2 -right-2 bg-berry-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold"></span>
+        </button>
+        <!-- Mobile Menu -->
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden text-gray-400 hover:text-berry-500">
+          <i data-lucide="menu" class="w-5 h-5" x-show="!mobileMenu"></i>
+          <i data-lucide="x" class="w-5 h-5" x-show="mobileMenu"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div x-show="mobileMenu" x-transition class="md:hidden bg-white border-t border-pink-100 px-4 py-4 space-y-2">
+    <template x-for="link in navLinks" :key="link.page">
+      <button @click="goPage(link.page); mobileMenu=false"
+        class="block w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+        :class="currentPage === link.page ? 'bg-berry-50 text-berry-600' : 'text-gray-600 hover:bg-pink-50'"
+        x-text="link.label"></button>
+    </template>
+  </div>
+
+  <!-- Search Bar -->
+  <div x-show="searchOpen" x-transition class="border-t border-pink-100 px-4 py-3 bg-white">
+    <div class="max-w-xl mx-auto relative">
+      <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+      <input type="text" placeholder="Search products..." x-model="searchQuery"
+        @input="searchProducts()"
+        class="w-full pl-11 pr-4 py-2.5 bg-pink-50 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+    </div>
+    <!-- Search Results -->
+    <div x-show="searchResults.length > 0" class="max-w-xl mx-auto mt-2 bg-white rounded-xl border border-pink-100 shadow-lg overflow-hidden">
+      <template x-for="p in searchResults.slice(0,4)" :key="p.id">
+        <button @click="openProduct(p); searchOpen=false; searchQuery=''; searchResults=[]"
+          class="flex items-center gap-3 w-full px-4 py-3 hover:bg-pink-50 transition-colors border-b border-pink-50 last:border-0">
+          <img :src="p.image" class="w-10 h-10 rounded-lg object-cover" />
+          <div class="text-left">
+            <p class="text-sm font-medium text-gray-800" x-text="p.name"></p>
+            <p class="text-xs text-berry-500" x-text="'Rs. ' + p.price.toLocaleString()"></p>
+          </div>
+        </button>
+      </template>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main class="pt-[88px]">
+
+  <!-- ======== HOME PAGE ======== -->
+  <div x-show="currentPage === 'home'">
+
+    <!-- Hero -->
+    <section class="relative min-h-[90vh] hero-pattern overflow-hidden flex items-center"
+      style="background: linear-gradient(135deg, #FFF9F5 0%, #FFE8F0 50%, #fdf2f8 100%)">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center py-16">
+
+          <!-- Text -->
+          <div class="fade-up">
+            <span class="inline-flex items-center gap-1.5 bg-berry-500/10 text-berry-600 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest mb-6">
+              🌸 New Collection 2025
+            </span>
+            <h1 class="font-display text-5xl md:text-7xl text-gray-900 leading-tight mb-6">
+              Glow Like<br/><span class="gradient-text">Never Before</span>
+            </h1>
+            <p class="text-gray-500 text-lg mb-8 max-w-md leading-relaxed">
+              Premium skincare crafted with nature's finest. Made for every skin tone in Pakistan.
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <button @click="goPage('shop')"
+                class="inline-flex items-center gap-2 bg-berry-500 hover:bg-berry-600 text-white px-8 py-4 rounded-full font-semibold text-sm transition-all hover:shadow-xl hover:shadow-berry-200 hover:-translate-y-0.5">
+                Shop Now <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+              <button @click="goPage('about')"
+                class="inline-flex items-center gap-2 border-2 border-berry-200 text-berry-600 hover:bg-berry-50 px-8 py-4 rounded-full font-semibold text-sm transition-all">
+                Our Story
+              </button>
+            </div>
+            <!-- Stats -->
+            <div class="flex gap-10 mt-10 pt-8 border-t border-pink-100">
+              <div x-data x-init="$el.classList.add('fade-up')" style="animation-delay:0.2s">
+                <div class="font-display text-3xl text-berry-600">10K+</div>
+                <div class="text-xs text-gray-400 mt-1">Happy Customers</div>
+              </div>
+              <div style="animation-delay:0.3s">
+                <div class="font-display text-3xl text-berry-600">100%</div>
+                <div class="text-xs text-gray-400 mt-1">Natural</div>
+              </div>
+              <div style="animation-delay:0.4s">
+                <div class="font-display text-3xl text-berry-600">50+</div>
+                <div class="text-xs text-gray-400 mt-1">Products</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image -->
+          <div class="flex justify-center">
+            <div class="relative">
+              <div class="w-72 h-72 md:w-[420px] md:h-[420px] rounded-full overflow-hidden border-8 border-white shadow-2xl float">
+                <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80"
+                  class="w-full h-full object-cover" alt="Hero" />
+              </div>
+              <!-- Floating badge 1 -->
+              <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl px-4 py-3 shadow-xl border border-pink-50">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="text-yellow-400">★★★★★</span>
+                </div>
+                <p class="text-xs font-semibold text-gray-700">10K+ Reviews</p>
+              </div>
+              <!-- Floating badge 2 -->
+              <div class="absolute -top-4 -right-4 bg-berry-500 text-white rounded-2xl px-4 py-3 shadow-xl">
+                <p class="text-xs font-bold">✨ Clean Beauty</p>
+                <p class="text-[10px] text-berry-100">No harmful chemicals</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Perks Strip -->
+    <section class="bg-white py-8 border-y border-pink-50">
+      <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <template x-for="perk in perks" :key="perk.title">
+          <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition-colors">
+            <div class="w-10 h-10 bg-berry-50 rounded-full flex items-center justify-center shrink-0 text-lg" x-text="perk.icon"></div>
+            <div>
+              <p class="text-sm font-semibold text-gray-800" x-text="perk.title"></p>
+              <p class="text-xs text-gray-400" x-text="perk.desc"></p>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- Bestsellers -->
+    <section class="py-20 bg-[#FFF9F5]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-10">
+          <div>
+            <p class="text-xs text-berry-500 uppercase tracking-widest font-semibold mb-2">Customer Favorites</p>
+            <h2 class="font-display text-4xl text-gray-900">Bestsellers</h2>
+          </div>
+          <button @click="goPage('shop')" class="hidden md:flex items-center gap-1 text-sm text-berry-500 hover:text-berry-700 font-semibold transition-colors">
+            View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <template x-for="p in products.filter(p => p.tag === 'Bestseller' || p.tag === 'Fan Favorite').slice(0,4)" :key="p.id">
+            <div x-html="productCardHTML(p)"></div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner -->
+    <section class="relative py-24 overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-berry-700 to-berry-900"></div>
+      <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle, white 1px, transparent 1px);background-size:35px 35px"></div>
+      <div class="relative max-w-4xl mx-auto px-4 text-center">
+        <p class="text-berry-300 text-xs uppercase tracking-widest mb-4 font-semibold">Limited Time Offer</p>
+        <h2 class="font-display text-5xl md:text-6xl text-white mb-6">20% Off Your First Order</h2>
+        <p class="text-berry-200 text-lg mb-8">Use code <span class="bg-white/20 text-white font-bold px-4 py-1.5 rounded-lg mx-1">GLOW20</span> at checkout</p>
+        <button @click="goPage('shop')"
+          class="inline-flex items-center gap-2 bg-white text-berry-700 px-8 py-4 rounded-full font-bold text-sm hover:bg-pink-50 transition-all hover:shadow-xl hover:-translate-y-1">
+          Shop Now 🌸
+        </button>
+      </div>
+    </section>
+
+    <!-- New Arrivals -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-10">
+          <div>
+            <p class="text-xs text-berry-500 uppercase tracking-widest font-semibold mb-2">Just Landed</p>
+            <h2 class="font-display text-4xl text-gray-900">New Arrivals</h2>
+          </div>
+          <button @click="goPage('shop')" class="hidden md:flex items-center gap-1 text-sm text-berry-500 hover:text-berry-700 font-semibold transition-colors">
+            View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <template x-for="p in products.filter(p => p.tag === 'New' || p.tag === 'Luxury').slice(0,4)" :key="p.id">
+            <div x-html="productCardHTML(p)"></div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-blush">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <p class="text-xs text-berry-500 uppercase tracking-widest font-semibold mb-2">Real Stories</p>
+          <h2 class="font-display text-4xl text-gray-900">What Our Girls Say 💕</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <template x-for="t in testimonials" :key="t.id">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-50 hover:shadow-md transition-shadow">
+              <div class="text-yellow-400 text-sm mb-3">★★★★★</div>
+              <p class="text-gray-600 text-sm leading-relaxed mb-4 italic" x-text="'&quot;' + t.text + '&quot;'"></p>
+              <div class="flex items-center gap-3 pt-4 border-t border-pink-50">
+                <div class="w-10 h-10 rounded-full bg-berry-100 flex items-center justify-center font-bold text-berry-600 text-sm" x-text="t.avatar"></div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-800" x-text="t.name"></p>
+                  <p class="text-xs text-gray-400" x-text="t.location + ' · ' + t.product"></p>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- Instagram Grid -->
+    <section class="py-16 bg-white">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-xs text-berry-500 uppercase tracking-widest font-semibold mb-2">Follow Us</p>
+        <h2 class="font-display text-3xl text-gray-900 mb-2">@sugarberry.pk</h2>
+        <p class="text-sm text-gray-400 mb-8">Share your glow with #SugarberryGlow</p>
+        <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
+          <template x-for="img in instaImages" :key="img">
+            <a href="https://instagram.com" target="_blank" class="aspect-square overflow-hidden rounded-xl group">
+              <img :src="img" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            </a>
+          </template>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ======== SHOP PAGE ======== -->
+  <div x-show="currentPage === 'shop'">
+    <div class="bg-gradient-to-r from-berry-600 to-berry-400 py-14 text-white text-center">
+      <p class="text-xs uppercase tracking-widest text-berry-200 mb-2">Discover</p>
+      <h1 class="font-display text-5xl">Our Collection</h1>
+      <p class="text-berry-100 mt-2 text-sm" x-text="filteredProducts.length + ' Products'"></p>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <!-- Search + Sort -->
+      <div class="flex flex-col md:flex-row gap-4 mb-8">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+          <input type="text" placeholder="Search products..." x-model="shopSearch"
+            class="w-full pl-11 pr-4 py-3 rounded-xl border border-pink-100 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+        </div>
+        <select x-model="sortBy" class="px-4 py-3 rounded-xl border border-pink-100 bg-white text-sm text-gray-600 focus:outline-none min-w-[180px]">
+          <option value="default">Sort: Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+        </select>
+      </div>
+
+      <div class="flex gap-8">
+        <!-- Sidebar -->
+        <aside class="hidden md:block w-52 shrink-0">
+          <div class="bg-white rounded-2xl p-5 border border-pink-50 shadow-sm sticky top-24">
+            <h3 class="font-display text-lg text-gray-800 mb-4">Filters</h3>
+            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Category</p>
+            <div class="space-y-1">
+              <template x-for="cat in categories" :key="cat">
+                <button @click="selectedCategory = cat"
+                  class="w-full text-left px-3 py-2 rounded-lg text-sm transition-all"
+                  :class="selectedCategory === cat ? 'bg-berry-50 text-berry-600 font-semibold' : 'text-gray-500 hover:bg-pink-50'"
+                  x-text="cat"></button>
+              </template>
+            </div>
+            <div class="mt-5 pt-4 border-t border-pink-50">
+              <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
+                Max Price: <span class="text-berry-500" x-text="'Rs. ' + maxPrice.toLocaleString()"></span>
+              </p>
+              <input type="range" min="500" max="5000" step="100" x-model="maxPrice" class="w-full" />
+              <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <span>Rs. 500</span><span>Rs. 5,000</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Products -->
+        <div class="flex-1">
+          <p class="text-sm text-gray-400 mb-5" x-text="filteredProducts.length + ' products found'"></p>
+          <div x-show="filteredProducts.length === 0" class="text-center py-20">
+            <p class="font-display text-3xl text-gray-300 mb-3">No Products Found</p>
+            <button @click="shopSearch=''; selectedCategory='All'; maxPrice=5000"
+              class="text-berry-500 text-sm underline mt-2">Clear filters</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <template x-for="p in filteredProducts" :key="p.id">
+              <div x-html="productCardHTML(p)"></div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== PRODUCT DETAIL PAGE ======== -->
+  <div x-show="currentPage === 'product' && currentProduct">
+    <div x-show="currentProduct" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs text-gray-400 mb-8">
+        <button @click="goPage('home')" class="hover:text-berry-500">Home</button>
+        <span>/</span>
+        <button @click="goPage('shop')" class="hover:text-berry-500">Shop</button>
+        <span>/</span>
+        <span class="text-gray-700" x-text="currentProduct?.name"></span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+        <!-- Image -->
+        <div class="relative">
+          <div class="aspect-square rounded-3xl overflow-hidden bg-white shadow-xl">
+            <img :src="currentProduct?.image" :alt="currentProduct?.name" class="w-full h-full object-cover" />
+          </div>
+          <div x-show="currentProduct?.tag" class="absolute top-4 left-4 bg-berry-500 text-white text-xs font-bold px-3 py-1.5 rounded-full" x-text="currentProduct?.tag"></div>
+        </div>
+
+        <!-- Info -->
+        <div>
+          <p class="text-xs text-berry-400 uppercase tracking-widest mb-2" x-text="currentProduct?.category"></p>
+          <h1 class="font-display text-4xl text-gray-900 mb-3" x-text="currentProduct?.name"></h1>
+
+          <!-- Rating -->
+          <div class="flex items-center gap-2 mb-5">
+            <span class="text-yellow-400">★★★★★</span>
+            <span class="text-sm text-gray-500" x-text="currentProduct?.rating + ' (' + currentProduct?.reviews + ' reviews)'"></span>
+          </div>
+
+          <!-- Price -->
+          <div class="flex items-baseline gap-3 mb-6">
+            <span class="font-display text-3xl text-berry-600" x-text="'Rs. ' + currentProduct?.price.toLocaleString()"></span>
+            <span x-show="currentProduct?.originalPrice" class="text-gray-400 text-lg line-through" x-text="'Rs. ' + currentProduct?.originalPrice?.toLocaleString()"></span>
+          </div>
+
+          <p class="text-gray-600 text-sm leading-relaxed mb-6" x-text="currentProduct?.description"></p>
+
+          <!-- Benefits -->
+          <div class="grid grid-cols-2 gap-2 mb-8">
+            <template x-for="b in currentProduct?.benefits" :key="b">
+              <div class="flex items-center gap-2 bg-berry-50 rounded-lg px-3 py-2">
+                <span class="text-berry-500 text-xs">✓</span>
+                <span class="text-xs text-berry-700" x-text="b"></span>
+              </div>
+            </template>
+          </div>
+
+          <!-- Qty + Add to Cart -->
+          <div class="flex items-center gap-4 mb-4">
+            <div class="flex items-center border border-pink-200 rounded-xl overflow-hidden bg-white">
+              <button @click="if(detailQty>1) detailQty--" class="px-4 py-3 text-gray-400 hover:bg-pink-50 transition-colors">−</button>
+              <span class="px-4 font-semibold text-gray-800 min-w-[2rem] text-center" x-text="detailQty"></span>
+              <button @click="detailQty++" class="px-4 py-3 text-gray-400 hover:bg-pink-50 transition-colors">+</button>
+            </div>
+            <button @click="addToCart(currentProduct, detailQty)"
+              class="flex-1 py-3.5 bg-berry-500 hover:bg-berry-600 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-berry-200">
+              🛍️ Add to Bag
+            </button>
+          </div>
+
+          <button @click="toggleWishlist(currentProduct)"
+            class="w-full py-3 rounded-xl border-2 font-semibold text-sm transition-all mb-6"
+            :class="isWishlisted(currentProduct?.id) ? 'border-berry-400 bg-berry-50 text-berry-600' : 'border-gray-200 text-gray-500 hover:border-berry-200'">
+            <span x-text="isWishlisted(currentProduct?.id) ? '❤️ Wishlisted' : '🤍 Add to Wishlist'"></span>
+          </button>
+
+          <!-- Tabs -->
+          <div class="border-t border-pink-100 pt-6">
+            <div class="flex gap-6 border-b border-pink-50 mb-4">
+              <template x-for="tab in ['Description','Ingredients','How To Use']" :key="tab">
+                <button @click="activeTab = tab"
+                  class="text-sm pb-3 transition-all"
+                  :class="activeTab === tab ? 'tab-active font-semibold' : 'text-gray-400 hover:text-gray-600'"
+                  x-text="tab"></button>
+              </template>
+            </div>
+            <p class="text-sm text-gray-600 leading-relaxed"
+              x-text="activeTab === 'Description' ? currentProduct?.description : activeTab === 'Ingredients' ? currentProduct?.ingredients : currentProduct?.howToUse"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Products -->
+      <div class="mt-20">
+        <h2 class="font-display text-3xl text-gray-900 mb-8">You May Also Like</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <template x-for="p in products.filter(p => p.category === currentProduct?.category && p.id !== currentProduct?.id).slice(0,4)" :key="p.id">
+            <div x-html="productCardHTML(p)"></div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== CART PAGE ======== -->
+  <div x-show="currentPage === 'cart'">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 class="font-display text-4xl text-gray-900 mb-8">
+        Your Bag <span class="text-berry-400 text-2xl" x-text="'(' + cart.length + ' items)'"></span>
+      </h1>
+
+      <!-- Empty Cart -->
+      <div x-show="cart.length === 0" class="text-center py-20">
+        <div class="w-24 h-24 bg-berry-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🛍️</div>
+        <h2 class="font-display text-3xl text-gray-400 mb-3">Your bag is empty</h2>
+        <p class="text-sm text-gray-400 mb-8">Discover our skincare collection</p>
+        <button @click="goPage('shop')"
+          class="inline-flex items-center gap-2 bg-berry-500 text-white px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-berry-600 transition-all">
+          Start Shopping →
+        </button>
+      </div>
+
+      <div x-show="cart.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Items -->
+        <div class="lg:col-span-2 space-y-4">
+          <template x-for="item in cart" :key="item.id">
+            <div class="bg-white rounded-2xl p-5 flex gap-5 border border-pink-50 shadow-sm">
+              <button @click="openProduct(products.find(p=>p.id===item.id))" class="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-pink-50">
+                <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-berry-400 mb-1" x-text="item.category"></p>
+                <h3 class="font-display text-base text-gray-800 mb-3" x-text="item.name"></h3>
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                  <div class="flex items-center border border-pink-100 rounded-lg overflow-hidden">
+                    <button @click="updateQty(item.id, item.quantity - 1)" class="px-3 py-1.5 text-gray-400 hover:bg-pink-50 transition-colors">−</button>
+                    <span class="px-3 font-semibold text-sm text-gray-700" x-text="item.quantity"></span>
+                    <button @click="updateQty(item.id, item.quantity + 1)" class="px-3 py-1.5 text-gray-400 hover:bg-pink-50 transition-colors">+</button>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="font-bold text-berry-600" x-text="'Rs. ' + (item.price * item.quantity).toLocaleString()"></span>
+                    <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-400 transition-colors">🗑️</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-white rounded-2xl p-6 border border-pink-50 shadow-sm sticky top-24 h-fit">
+          <h3 class="font-display text-xl text-gray-800 mb-5">Order Summary</h3>
+          <!-- Promo -->
+          <div class="flex gap-2 mb-5">
+            <input type="text" placeholder="Promo code" x-model="promoCode"
+              class="flex-1 px-4 py-2.5 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+            <button @click="applyPromo()" class="px-4 py-2.5 bg-berry-50 text-berry-600 font-semibold text-sm rounded-xl hover:bg-berry-100 transition-colors">Apply</button>
+          </div>
+          <div x-show="promoApplied" class="text-xs text-green-500 font-semibold mb-3">✓ GLOW20 applied — 20% off!</div>
+
+          <div class="space-y-3 pb-5 border-b border-pink-50">
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>Subtotal</span><span x-text="'Rs. ' + cartSubtotal.toLocaleString()"></span>
+            </div>
+            <div x-show="promoApplied" class="flex justify-between text-sm text-green-500 font-semibold">
+              <span>Discount (20%)</span><span x-text="'- Rs. ' + Math.round(cartSubtotal * 0.2).toLocaleString()"></span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>Shipping</span>
+              <span :class="cartShipping === 0 ? 'text-green-500 font-semibold' : ''"
+                x-text="cartShipping === 0 ? 'FREE 🎉' : 'Rs. ' + cartShipping"></span>
+            </div>
+            <p x-show="cartShipping > 0" class="text-xs text-berry-400"
+              x-text="'Add Rs. ' + (2500 - cartSubtotal).toLocaleString() + ' more for free shipping'"></p>
+          </div>
+
+          <div class="flex justify-between font-display text-xl text-gray-900 py-5">
+            <span>Total</span>
+            <span class="text-berry-600" x-text="'Rs. ' + cartTotal.toLocaleString()"></span>
+          </div>
+
+          <button @click="goPage('checkout')"
+            class="block w-full py-4 bg-berry-500 hover:bg-berry-600 text-white rounded-xl font-bold text-sm text-center transition-all hover:shadow-lg hover:shadow-berry-200">
+            Proceed to Checkout →
+          </button>
+          <button @click="goPage('shop')" class="block text-center mt-3 text-xs text-gray-400 hover:text-berry-500 transition-colors">
+            ← Continue Shopping
+          </button>
+          <p class="text-xs text-gray-400 text-center mt-4">🔒 Secure checkout · COD available</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== CHECKOUT PAGE ======== -->
+  <div x-show="currentPage === 'checkout'">
+    <!-- Success State -->
+    <div x-show="orderPlaced" class="flex items-center justify-center min-h-screen px-4">
+      <div class="bg-white rounded-3xl p-10 max-w-md w-full text-center shadow-xl border border-pink-50">
+        <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">✅</div>
+        <h2 class="font-display text-3xl text-gray-900 mb-2">Order Placed! 🌸</h2>
+        <p class="text-gray-500 text-sm mb-6 leading-relaxed">
+          Confirmation sent to <strong x-text="checkoutForm.email"></strong>.<br/>
+          WhatsApp is opening for payment & order confirmation.
+        </p>
+        <div class="space-y-3 mb-8">
+          <div class="bg-green-50 rounded-xl px-4 py-3 flex items-center gap-3">
+            <span>📱</span>
+            <p class="text-xs text-green-700 text-left">WhatsApp opened — confirm your order there</p>
+          </div>
+          <div class="bg-blue-50 rounded-xl px-4 py-3 flex items-center gap-3">
+            <span>📧</span>
+            <p class="text-xs text-blue-700 text-left">Check your Gmail for order confirmation</p>
+          </div>
+        </div>
+        <button @click="goPage('home'); orderPlaced=false"
+          class="block w-full py-3.5 bg-berry-500 text-white rounded-xl font-bold text-sm hover:bg-berry-600 transition-all">
+          Back to Home 🌸
+        </button>
+      </div>
+    </div>
+
+    <!-- Checkout Form -->
+    <div x-show="!orderPlaced" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 class="font-display text-4xl text-gray-900 mb-8">Checkout</h1>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Form -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Contact -->
+          <div class="bg-white rounded-2xl p-6 border border-pink-50 shadow-sm">
+            <h3 class="font-display text-xl text-gray-800 mb-5">Contact Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Full Name *</label>
+                <input type="text" x-model="checkoutForm.name" placeholder="Your name"
+                  class="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200"
+                  :class="formErrors.name ? 'border-red-300' : 'border-pink-100'" />
+                <p x-show="formErrors.name" class="text-xs text-red-500 mt-1" x-text="formErrors.name"></p>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email *</label>
+                <input type="email" x-model="checkoutForm.email" placeholder="your@gmail.com"
+                  class="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200"
+                  :class="formErrors.email ? 'border-red-300' : 'border-pink-100'" />
+                <p x-show="formErrors.email" class="text-xs text-red-500 mt-1" x-text="formErrors.email"></p>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Phone Number *</label>
+                <input type="tel" x-model="checkoutForm.phone" placeholder="+92 300 1234567"
+                  class="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200"
+                  :class="formErrors.phone ? 'border-red-300' : 'border-pink-100'" />
+                <p x-show="formErrors.phone" class="text-xs text-red-500 mt-1" x-text="formErrors.phone"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery -->
+          <div class="bg-white rounded-2xl p-6 border border-pink-50 shadow-sm">
+            <h3 class="font-display text-xl text-gray-800 mb-5">Delivery Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Street Address *</label>
+                <input type="text" x-model="checkoutForm.address" placeholder="House no, street, area"
+                  class="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200"
+                  :class="formErrors.address ? 'border-red-300' : 'border-pink-100'" />
+                <p x-show="formErrors.address" class="text-xs text-red-500 mt-1" x-text="formErrors.address"></p>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">City *</label>
+                <select x-model="checkoutForm.city"
+                  class="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200 text-gray-700"
+                  :class="formErrors.city ? 'border-red-300' : 'border-pink-100'">
+                  <option value="">Select city</option>
+                  <template x-for="c in cities" :key="c"><option x-text="c"></option></template>
+                </select>
+                <p x-show="formErrors.city" class="text-xs text-red-500 mt-1" x-text="formErrors.city"></p>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Notes</label>
+                <input type="text" x-model="checkoutForm.notes" placeholder="Special instructions..."
+                  class="w-full px-4 py-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment -->
+          <div class="bg-white rounded-2xl p-6 border border-pink-50 shadow-sm">
+            <h3 class="font-display text-xl text-gray-800 mb-5">Payment Method</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <template x-for="pm in paymentMethods" :key="pm.id">
+                <button @click="checkoutForm.paymentMethod = pm.id"
+                  class="flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-sm font-medium"
+                  :class="checkoutForm.paymentMethod === pm.id ? 'border-berry-500 bg-berry-50 text-berry-700' : 'border-pink-100 text-gray-600 hover:border-berry-200'">
+                  <span x-text="pm.icon"></span><span x-text="pm.label"></span>
+                </button>
+              </template>
+            </div>
+            <div x-show="checkoutForm.paymentMethod === 'EasyPaisa'" class="mt-4 bg-pink-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+              📱 EasyPaisa: <strong>0300-1234567</strong> — Account: Sugar Berry
+            </div>
+            <div x-show="checkoutForm.paymentMethod === 'BankTransfer'" class="mt-4 bg-pink-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+              🏦 HBL: <strong>0123-4567890-1</strong> — Account: Sugar Berry Official
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="bg-white rounded-2xl p-6 border border-pink-50 shadow-sm sticky top-24 h-fit">
+          <h3 class="font-display text-xl text-gray-800 mb-5">Order Summary</h3>
+          <div class="space-y-3 mb-5 max-h-48 overflow-y-auto">
+            <template x-for="item in cart" :key="item.id">
+              <div class="flex gap-3 items-center">
+                <img :src="item.image" class="w-12 h-12 rounded-lg object-cover shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-700 truncate" x-text="item.name"></p>
+                  <p class="text-xs text-gray-400" x-text="'x' + item.quantity"></p>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 shrink-0" x-text="'Rs. ' + (item.price * item.quantity).toLocaleString()"></span>
+              </div>
+            </template>
+          </div>
+          <div class="space-y-2 py-4 border-t border-b border-pink-50">
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>Subtotal</span><span x-text="'Rs. ' + cartSubtotal.toLocaleString()"></span>
+            </div>
+            <div x-show="promoApplied" class="flex justify-between text-sm text-green-500 font-semibold">
+              <span>Discount</span><span x-text="'- Rs. ' + Math.round(cartSubtotal*0.2).toLocaleString()"></span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>Shipping</span>
+              <span :class="cartShipping===0?'text-green-500 font-semibold':''"
+                x-text="cartShipping===0?'FREE':'Rs. '+cartShipping"></span>
+            </div>
+          </div>
+          <div class="flex justify-between font-display text-xl text-gray-900 py-4">
+            <span>Total</span>
+            <span class="text-berry-600" x-text="'Rs. ' + cartTotal.toLocaleString()"></span>
+          </div>
+          <button @click="placeOrder()"
+            :disabled="checkoutLoading"
+            class="w-full py-4 bg-berry-500 hover:bg-berry-600 disabled:bg-berry-300 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-berry-200">
+            <span x-show="checkoutLoading">⏳ Processing...</span>
+            <span x-show="!checkoutLoading">📱 Confirm Order via WhatsApp</span>
+          </button>
+          <p class="text-xs text-gray-400 text-center mt-3">✉️ Gmail confirmation will be sent automatically</p>
+          <p class="text-xs text-gray-400 text-center mt-1">🔒 Your information is safe</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== WISHLIST PAGE ======== -->
+  <div x-show="currentPage === 'wishlist'">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 class="font-display text-4xl text-gray-900 mb-8">
+        My Wishlist <span class="text-berry-400 text-2xl" x-show="wishlist.length > 0" x-text="'(' + wishlist.length + ')'"></span>
+      </h1>
+      <div x-show="wishlist.length === 0" class="text-center py-20">
+        <div class="w-24 h-24 bg-berry-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🤍</div>
+        <h2 class="font-display text-3xl text-gray-400 mb-3">Your wishlist is empty</h2>
+        <p class="text-sm text-gray-400 mb-8">Save products you love by clicking the heart icon</p>
+        <button @click="goPage('shop')"
+          class="inline-flex items-center gap-2 bg-berry-500 text-white px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-berry-600 transition-all">
+          Explore Products →
+        </button>
+      </div>
+      <div x-show="wishlist.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <template x-for="p in wishlist" :key="p.id">
+          <div x-html="productCardHTML(p)"></div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== ABOUT PAGE ======== -->
+  <div x-show="currentPage === 'about'">
+    <div class="relative h-[60vh] overflow-hidden flex items-center justify-center"
+      style="background: linear-gradient(135deg, #be185d, #831843)">
+      <div class="text-center text-white z-10 px-4">
+        <p class="text-xs uppercase tracking-widest text-pink-300 mb-4 font-semibold">Our Story</p>
+        <h1 class="font-display text-6xl mb-4">About Sugarberry</h1>
+        <p class="text-pink-200 text-lg max-w-xl mx-auto">Born in Pakistan, made for every skin tone. We believe glow is not a privilege — it's your right.</p>
+      </div>
+      <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle, white 1px, transparent 1px);background-size:30px 30px"></div>
+    </div>
+
+    <section class="py-20 bg-white">
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <p class="text-xs text-berry-500 uppercase tracking-widest font-semibold mb-4">How It Started</p>
+        <h2 class="font-display text-4xl text-gray-900 mb-8">Crafted with Love 💕</h2>
+        <p class="text-gray-600 text-base leading-relaxed mb-6">Sugarberry was born from a simple frustration — finding clean, effective skincare that actually works for South Asian skin. Our founder, Zara, spent years testing imported products that promised glow but left behind irritation.</p>
+        <p class="text-gray-600 text-base leading-relaxed mb-6">In 2022, she started formulating in her kitchen — blending rose extracts, local honey, and time-tested herbs into products that her friends immediately fell in love with. Today, Sugarberry ships across all of Pakistan.</p>
+        <p class="text-gray-600 text-base leading-relaxed">Every formula is clean, cruelty-free, and dermatologist-tested. We use no harmful chemicals — just nature's finest, bottled beautifully.</p>
+      </div>
+    </section>
+
+    <section class="py-16 bg-[#FFF9F5]">
+      <div class="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <template x-for="v in values" :key="v.title">
+          <div class="text-center p-6 bg-white rounded-2xl shadow-sm border border-pink-50 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4" x-text="v.icon"></div>
+            <h3 class="font-display text-lg text-gray-800 mb-2" x-text="v.title"></h3>
+            <p class="text-xs text-gray-500 leading-relaxed" x-text="v.desc"></p>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <section class="py-16 bg-gradient-to-br from-berry-50 to-blush text-center">
+      <h2 class="font-display text-4xl text-gray-900 mb-4">Join the Sugarberry Family</h2>
+      <p class="text-gray-500 text-sm mb-8">Over 10,000 glowing customers can't be wrong 🌸</p>
+      <button @click="goPage('shop')"
+        class="inline-flex items-center gap-2 bg-berry-500 text-white px-8 py-4 rounded-full font-bold text-sm hover:bg-berry-600 transition-all hover:shadow-xl hover:shadow-berry-200">
+        Shop Now 🌸
+      </button>
+    </section>
+  </div>
+
+  <!-- ======== CONTACT PAGE ======== -->
+  <div x-show="currentPage === 'contact'">
+    <div class="bg-gradient-to-r from-berry-600 to-berry-400 py-14 text-white text-center">
+      <p class="text-xs uppercase tracking-widest text-berry-200 mb-2">We're Here</p>
+      <h1 class="font-display text-5xl">Contact Us</h1>
+      <p class="text-berry-100 mt-2 text-sm">We'd love to hear from you 🌸</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <!-- Form -->
+      <div class="bg-white rounded-2xl p-8 border border-pink-50 shadow-sm">
+        <h3 class="font-display text-2xl text-gray-800 mb-6">Send a Message</h3>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1.5">Full Name</label>
+              <input type="text" x-model="contactForm.name" placeholder="Your name"
+                class="w-full px-4 py-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email</label>
+              <input type="email" x-model="contactForm.email" placeholder="your@gmail.com"
+                class="w-full px-4 py-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Subject</label>
+            <input type="text" x-model="contactForm.subject" placeholder="How can we help?"
+              class="w-full px-4 py-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Message</label>
+            <textarea rows="5" x-model="contactForm.message" placeholder="Tell us your query..."
+              class="w-full px-4 py-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-berry-200 resize-none"></textarea>
+          </div>
+          <div class="flex gap-3">
+            <button @click="submitContact()"
+              class="flex-1 py-3.5 bg-berry-500 hover:bg-berry-600 text-white rounded-xl font-bold text-sm transition-all">
+              <span x-show="!contactSent">✉️ Send Message</span>
+              <span x-show="contactSent">✅ Message Sent!</span>
+            </button>
+            <button @click="openWhatsApp('Hi Sugarberry! ' + contactForm.message)"
+              class="flex items-center gap-2 px-5 py-3.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm transition-all">
+              📱 WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="space-y-5">
+        <template x-for="info in contactInfo" :key="info.title">
+          <div class="bg-white rounded-2xl p-5 border border-pink-50 shadow-sm flex gap-4 items-start">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-2xl" x-text="info.icon"></div>
+            <div class="flex-1">
+              <h4 class="font-display text-lg text-gray-800" x-text="info.title"></h4>
+              <p class="text-xs text-gray-400 mb-1" x-text="info.desc"></p>
+              <p class="text-sm font-semibold text-gray-700" x-text="info.detail"></p>
+            </div>
+            <button @click="info.action()" class="text-xs font-semibold text-berry-500 hover:text-berry-700 transition-colors shrink-0" x-text="info.btn + ' →'"></button>
+          </div>
+        </template>
+
+        <div class="bg-gradient-to-br from-berry-50 to-blush rounded-2xl p-5 border border-pink-100">
+          <h4 class="font-display text-lg text-gray-800 mb-3">Business Hours</h4>
+          <template x-for="h in hours" :key="h.day">
+            <div class="flex justify-between text-sm py-1.5 border-b border-pink-100 last:border-0">
+              <span class="text-gray-600" x-text="h.day"></span>
+              <span :class="h.time === 'Closed' ? 'text-red-400 font-semibold' : 'text-berry-600 font-semibold'" x-text="h.time"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-gradient-to-br from-berry-900 to-berry-800 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">🌸</span>
+          <span class="font-display text-2xl">Sugar<span class="text-berry-300">berry</span></span>
+        </div>
+        <p class="text-berry-200 text-sm leading-relaxed mb-6">Skincare crafted with love, inspired by nature. Reveal your most radiant self.</p>
+        <div class="flex gap-3">
+          <a href="https://instagram.com" target="_blank" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-sm">📷</a>
+          <a href="https://facebook.com" target="_blank" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-sm">👍</a>
+          <a href="https://wa.me/923001234567" target="_blank" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-sm">📱</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display text-lg mb-5 text-berry-200">Quick Links</h4>
+        <ul class="space-y-3">
+          <template x-for="link in navLinks" :key="link.page">
+            <li><button @click="goPage(link.page)" class="text-sm text-berry-300 hover:text-white transition-colors" x-text="link.label"></button></li>
+          </template>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display text-lg mb-5 text-berry-200">Categories</h4>
+        <ul class="space-y-3">
+          <template x-for="cat in categories.filter(c=>c!=='All')" :key="cat">
+            <li><button @click="selectedCategory=cat; goPage('shop')" class="text-sm text-berry-300 hover:text-white transition-colors" x-text="cat"></button></li>
+          </template>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display text-lg mb-5 text-berry-200">Get in Touch</h4>
+        <ul class="space-y-4 text-sm text-berry-300">
+          <li>📍 Lahore, Pakistan</li>
+          <li>📞 +92 300 1234567</li>
+          <li>📧 sugarberry@gmail.com</li>
+        </ul>
+        <div class="mt-5 p-3 bg-white/5 rounded-xl border border-berry-700">
+          <p class="text-xs text-berry-300">📦 Delivery: 2–4 working days<br/>💳 COD & Bank Transfer accepted</p>
+        </div>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-berry-700 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-berry-400">© 2025 Sugarberry. All rights reserved. Made with 🌸 in Pakistan.</p>
+      <div class="flex gap-6">
+        <a href="#" class="text-xs text-berry-400 hover:text-berry-200 transition-colors">Privacy Policy</a>
+        <a href="#" class="text-xs text-berry-400 hover:text-berry-200 transition-colors">Terms</a>
+        <a href="#" class="text-xs text-berry-400 hover:text-berry-200 transition-colors">Refund Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== ALPINE.JS APP ===================== -->
+<script>
+function sugarberry() {
+  return {
+    // Navigation
+    currentPage: 'home',
+    mobileMenu: false,
+    searchOpen: false,
+    searchQuery: '',
+    searchResults: [],
+
+    navLinks: [
+      { page: 'home', label: 'Home' },
+      { page: 'shop', label: 'Shop' },
+      { page: 'about', label: 'About' },
+      { page: 'contact', label: 'Contact' },
+    ],
+
+    // Toast
+    toast: { show: false, msg: '' },
+
+    // Product Detail
+    currentProduct: null,
+    detailQty: 1,
+    activeTab: 'Description',
+
+    // Cart
+    cart: [],
+    promoCode: '',
+    promoApplied: false,
+
+    // Checkout
+    orderPlaced: false,
+    checkoutLoading: false,
+    checkoutForm: {
+      name: '', email: '', phone: '', address: '', city: '', notes: '',
+      paymentMethod: 'COD'
+    },
+    formErrors: {},
+
+    // Wishlist
+    wishlist: [],
+
+    // Shop filters
+    shopSearch: '',
+    selectedCategory: 'All',
+    sortBy: 'default',
+    maxPrice: 5000,
+
+    // Contact
+    contactForm: { name: '', email: '', subject: '', message: '' },
+    contactSent: false,
+
+    // Config — CHANGE THESE
+    WHATSAPP: '923001234567',
+    BUSINESS_EMAIL: 'sugarberry@gmail.com',
+
+    // Static Data
+    perks: [
+      { icon: '🌿', title: 'Clean Ingredients', desc: 'No parabens or sulfates' },
+      { icon: '🔬', title: 'Dermatologist Tested', desc: 'Safe for all skin types' },
+      { icon: '🚚', title: 'Fast Delivery', desc: '2-4 days across Pakistan' },
+      { icon: '↩️', title: 'Easy Returns', desc: '7-day hassle-free returns' },
+    ],
+
+    values: [
+      { icon: '🌿', title: 'Clean Beauty', desc: 'No parabens, sulfates, or synthetic fragrances' },
+      { icon: '💕', title: 'Made with Love', desc: 'Every product crafted with care' },
+      { icon: '🔬', title: 'Dermatologist Tested', desc: 'Safe for all skin types' },
+      { icon: '👩‍👩‍👧', title: 'Community First', desc: 'Built by women, for women in Pakistan' },
+    ],
+
+    testimonials: [
+      { id:1, name:'Ayesha Malik', location:'Lahore', avatar:'AM', product:'Rose Glow Serum', text:'Sugarberry changed my skincare game completely! The Rose Glow Serum is absolutely magical. My skin has never looked this radiant.' },
+      { id:2, name:'Sara Khan', location:'Karachi', avatar:'SK', product:'Sugar Scrub', text:'Finally a Pakistani brand that understands quality. The Sugar Scrub is my Sunday ritual now. My skin feels like velvet!' },
+      { id:3, name:'Zara Ahmed', location:'Islamabad', avatar:'ZA', product:'Berry Burst Moisturizer', text:'Fast delivery, beautiful packaging, and products that actually work! The moisturizer keeps my skin hydrated all day.' },
+    ],
+
+    instaImages: [
+      'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80',
+      'https://images.unsplash.com/photo-1498843053639-170ff2122f35?w=200&q=80',
+      'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=200&q=80',
+      'https://images.unsplash.com/photo-1586495777744-4e6232bf8bfa?w=200&q=80',
+      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80',
+      'https://images.unsplash.com/photo-1531895861208-cf5571d96965?w=200&q=80',
+    ],
+
+    categories: ['All','Serums','Moisturizers','Exfoliators','Toners','Cleansers','Face Oils','Eye Care','Sun Care'],
+
+    paymentMethods: [
+      { id: 'COD', label: 'Cash on Delivery', icon: '💵' },
+      { id: 'EasyPaisa', label: 'EasyPaisa', icon: '📱' },
+      { id: 'BankTransfer', label: 'Bank Transfer', icon: '🏦' },
+    ],
+
+    cities: ['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Sialkot','Gujranwala','Other'],
+
+    hours: [
+      { day: 'Monday–Friday', time: '10:00 AM – 7:00 PM' },
+      { day: 'Saturday', time: '11:00 AM – 5:00 PM' },
+      { day: 'Sunday', time: 'Closed' },
+    ],
+
+    get contactInfo() {
+      return [
+        { icon:'📱', title:'WhatsApp', desc:'Chat with us instantly', detail:'+92 300 1234567', btn:'Open', action: () => window.open('https://wa.me/'+this.WHATSAPP, '_blank') },
+        { icon:'📧', title:'Email', desc:'We reply within 24 hours', detail: this.BUSINESS_EMAIL, btn:'Email', action: () => window.open('mailto:'+this.BUSINESS_EMAIL) },
+        { icon:'📞', title:'Call Us', desc:'Mon–Sat, 10am–6pm', detail:'+92 300 1234567', btn:'Call', action: () => window.open('tel:+923001234567') },
+      ];
+    },
+
+    products: [
+      { id:1, name:'Rose Glow Serum', category:'Serums', price:2800, originalPrice:3500, rating:4.8, reviews:142, tag:'Bestseller', image:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&q=80', description:'Brightening rose extract serum with Vitamin C and hyaluronic acid for an ethereal glow.', benefits:['Brightens skin','Deep hydration','Reduces dark spots','Anti-aging'], ingredients:'Rose Extract, Vitamin C, Hyaluronic Acid, Niacinamide', howToUse:'Apply 2-3 drops on cleansed face morning and night. Pat gently until absorbed.' },
+      { id:2, name:'Berry Burst Moisturizer', category:'Moisturizers', price:1900, originalPrice:2400, rating:4.7, reviews:98, tag:'New', image:'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80', description:'Rich yet lightweight moisturizer with antioxidant-rich berry extracts for plump, dewy skin.', benefits:['24hr hydration','Antioxidant protection','Smooth texture','Non-greasy'], ingredients:'Strawberry Extract, Blueberry Oil, Shea Butter, Ceramides', howToUse:'Apply generously on face and neck after serum. Use morning and night.' },
+      { id:3, name:'Sugar Scrub Exfoliator', category:'Exfoliators', price:1500, originalPrice:null, rating:4.9, reviews:213, tag:'Fan Favorite', image:'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&q=80', description:'Gentle sugar crystal scrub with honey and almond oil. Reveals baby-soft skin in one use.', benefits:['Removes dead skin','Softens skin','Natural ingredients','Sensitive skin safe'], ingredients:'Cane Sugar, Raw Honey, Almond Oil, Rose Water', howToUse:'Massage on damp face in circular motions for 1-2 minutes. Rinse thoroughly.' },
+      { id:4, name:'Glass Skin Toner', category:'Toners', price:1200, originalPrice:1600, rating:4.6, reviews:76, tag:'Sale', image:'https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=400&q=80', description:'Korean-inspired toner that preps skin for maximum absorption and glass-like clarity.', benefits:['Balances pH','Minimizes pores','Brightening','Alcohol-free'], ingredients:'Centella Asiatica, Niacinamide, Glycerin, Green Tea Extract', howToUse:'Apply to cotton pad or hands after cleansing. Pat gently into skin.' },
+      { id:5, name:'Petal Soft Cleanser', category:'Cleansers', price:1100, originalPrice:null, rating:4.8, reviews:167, tag:null, image:'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&q=80', description:'Gentle foaming cleanser with real flower petals. Cleanses without stripping natural moisture.', benefits:['Deep cleanse','Maintains moisture','Floral fragrance','All skin types'], ingredients:'Rose Petals, Chamomile Extract, Aloe Vera, Coconut Cleansers', howToUse:'Massage onto wet face, lather for 30 seconds. Rinse with lukewarm water.' },
+      { id:6, name:'Golden Hour Face Oil', category:'Face Oils', price:3200, originalPrice:3800, rating:4.9, reviews:89, tag:'Luxury', image:'https://images.unsplash.com/photo-1619451683957-375d8b3e776a?w=400&q=80', description:'24k gold-infused facial oil blend. Luxurious, fast-absorbing formula for radiant skin.', benefits:['Anti-aging','Firms skin','Golden glow','Scar healing'], ingredients:'24k Gold, Rosehip Oil, Jojoba Oil, Vitamin E, Frankincense', howToUse:'Apply 4-5 drops to face after moisturizer. Press gently into skin.' },
+      { id:7, name:'Cloud Cream Eye Mask', category:'Eye Care', price:2100, originalPrice:2600, rating:4.7, reviews:54, tag:'New', image:'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400&q=80', description:'Hydrogel under-eye patches that depuff, brighten and reduce fine lines overnight.', benefits:['Depuffs eyes','Reduces dark circles','Anti-wrinkle','Cooling effect'], ingredients:'Caffeine, Retinol, Peptides, Hydrogel Matrix', howToUse:'Apply under eyes for 20-30 minutes. Use 3-4 times per week.' },
+      { id:8, name:'SPF 50 Sunscreen Fluid', category:'Sun Care', price:1800, originalPrice:null, rating:4.8, reviews:201, tag:'Essential', image:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&q=80', description:'Lightweight, invisible SPF 50 that doubles as a primer. No white cast formula.', benefits:['SPF 50 PA++++','No white cast','Primer effect','Blue light protection'], ingredients:'Zinc Oxide, Titanium Dioxide, Niacinamide, Hyaluronic Acid', howToUse:'Apply as last step of skincare. Reapply every 2 hours when outdoors.' },
+    ],
+
+    // Computed
+    get filteredProducts() {
+      let list = [...this.products];
+      if (this.selectedCategory !== 'All') list = list.filter(p => p.category === this.selectedCategory);
+      if (this.shopSearch) list = list.filter(p => p.name.toLowerCase().includes(this.shopSearch.toLowerCase()));
+      list = list.filter(p => p.price <= this.maxPrice);
+      if (this.sortBy === 'price-asc') list.sort((a,b) => a.price - b.price);
+      else if (this.sortBy === 'price-desc') list.sort((a,b) => b.price - a.price);
+      else if (this.sortBy === 'rating') list.sort((a,b) => b.rating - a.rating);
+      return list;
+    },
+
+    get cartCount() { return this.cart.reduce((s,i) => s+i.quantity, 0); },
+    get cartSubtotal() { return this.cart.reduce((s,i) => s + i.price*i.quantity, 0); },
+    get cartShipping() { return this.cartSubtotal >= 2500 ? 0 : 250; },
+    get cartTotal() {
+      const disc = this.promoApplied ? Math.round(this.cartSubtotal * 0.2) : 0;
+      return this.cartSubtotal - disc + this.cartShipping;
+    },
+
+    // Methods
+    init() {
+      // Re-render lucide icons whenever page changes
+      this.$watch('currentPage', () => this.$nextTick(() => lucide.createIcons()));
+      this.$nextTick(() => lucide.createIcons());
+    },
+
+    goPage(page) {
+      this.currentPage = page;
+      this.mobileMenu = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.$nextTick(() => lucide.createIcons());
+    },
+
+    showToast(msg) {
+      this.toast = { show: true, msg };
+      setTimeout(() => this.toast.show = false, 2500);
+      this.$nextTick(() => lucide.createIcons());
+    },
+
+    openProduct(p) {
+      this.currentProduct = p;
+      this.detailQty = 1;
+      this.activeTab = 'Description';
+      this.goPage('product');
+    },
+
+    addToCart(product, qty = 1) {
+      const existing = this.cart.find(i => i.id === product.id);
+      if (existing) existing.quantity += qty;
+      else this.cart.push({ ...product, quantity: qty });
+      this.showToast(product.name + ' added to bag!');
+    },
+
+    removeFromCart(id) { this.cart = this.cart.filter(i => i.id !== id); },
+    updateQty(id, qty) {
+      if (qty < 1) { this.removeFromCart(id); return; }
+      const item = this.cart.find(i => i.id === id);
+      if (item) item.quantity = qty;
+    },
+
+    toggleWishlist(product) {
+      if (this.isWishlisted(product.id)) {
+        this.wishlist = this.wishlist.filter(i => i.id !== product.id);
+        this.showToast('Removed from wishlist');
+      } else {
+        this.wishlist.push(product);
+        this.showToast('Added to wishlist ❤️');
+      }
+    },
+    isWishlisted(id) { return this.wishlist.some(i => i.id === id); },
+
+    applyPromo() {
+      if (this.promoCode.toUpperCase() === 'GLOW20') {
+        this.promoApplied = true;
+        this.showToast('Promo applied! 20% off 🎉');
+      } else {
+        this.showToast('Invalid promo code');
+      }
+    },
+
+    searchProducts() {
+      if (!this.searchQuery.trim()) { this.searchResults = []; return; }
+      this.searchResults = this.products.filter(p =>
+        p.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+
+    placeOrder() {
+      // Validate
+      const errs = {};
+      if (!this.checkoutForm.name.trim()) errs.name = 'Full name is required';
+      if (!this.checkoutForm.email.trim() || !this.checkoutForm.email.includes('@')) errs.email = 'Valid email required';
+      if (!this.checkoutForm.phone.trim() || this.checkoutForm.phone.length < 10) errs.phone = 'Valid phone required';
+      if (!this.checkoutForm.address.trim()) errs.address = 'Address is required';
+      if (!this.checkoutForm.city) errs.city = 'Please select your city';
+      this.formErrors = errs;
+      if (Object.keys(errs).length > 0) return;
+
+      this.checkoutLoading = true;
+
+      const orderId = 'SB-' + Date.now().toString(36).toUpperCase();
+      const itemLines = this.cart.map(i => `• ${i.name} x${i.quantity} — Rs. ${(i.price*i.quantity).toLocaleString()}`).join('\n');
+
+      const waMsg = encodeURIComponent(
+        `🌸 *NEW ORDER — Sugar Berry* 🌸\n\n` +
+        `*Order ID:* ${orderId}\n` +
+        `*Customer:* ${this.checkoutForm.name}\n` +
+        `*Phone:* ${this.checkoutForm.phone}\n` +
+        `*Email:* ${this.checkoutForm.email}\n` +
+        `*Address:* ${this.checkoutForm.address}, ${this.checkoutForm.city}\n\n` +
+        `*Items:*\n${itemLines}\n\n` +
+        `*Subtotal:* Rs. ${this.cartSubtotal.toLocaleString()}\n` +
+        `*Shipping:* ${this.cartShipping === 0 ? 'FREE' : 'Rs. ' + this.cartShipping}\n` +
+        `*Total:* Rs. ${this.cartTotal.toLocaleString()}\n\n` +
+        `*Payment:* ${this.checkoutForm.paymentMethod}\n` +
+        `*Notes:* ${this.checkoutForm.notes || 'None'}\n\n` +
+        `Please confirm! Thank you 🌸`
+      );
+
+      setTimeout(() => {
+        this.checkoutLoading = false;
+        this.cart = [];
+        this.promoApplied = false;
+        this.orderPlaced = true;
+        window.open(`https://wa.me/${this.WHATSAPP}?text=${waMsg}`, '_blank');
+      }, 1200);
+    },
+
+    submitContact() {
+      if (!this.contactForm.message.trim()) return;
+      this.contactSent = true;
+      this.showToast('Message received! We\'ll reply soon 🌸');
+      setTimeout(() => {
+        this.contactSent = false;
+        this.contactForm = { name:'', email:'', subject:'', message:'' };
+      }, 3000);
+    },
+
+    openWhatsApp(msg) {
+      window.open(`https://wa.me/${this.WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+    },
+
+    // Product Card HTML (rendered dynamically)
+    productCardHTML(p) {
+      const discount = p.originalPrice ? Math.round((1 - p.price/p.originalPrice)*100) : null;
+      const wishlisted = this.isWishlisted(p.id);
+      return `
+        <div class="product-card group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-pink-50 cursor-pointer">
+          <div class="relative overflow-hidden aspect-square bg-pink-50" onclick="Alpine.evaluate(document.querySelector('[x-data]'), 'openProduct(products.find(p=>p.id==${p.id}))')">
+            <img src="${p.image}" alt="${p.name}" class="product-img w-full h-full object-cover" />
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+              ${p.tag ? `<span class="bg-berry-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">${p.tag}</span>` : ''}
+              ${discount ? `<span class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">-${discount}%</span>` : ''}
+            </div>
+            <button onclick="event.stopPropagation(); Alpine.evaluate(document.querySelector('[x-data]'), 'toggleWishlist(products.find(p=>p.id==${p.id}))')"
+              class="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-md ${wishlisted ? 'bg-berry-500 text-white' : 'bg-white/90 text-gray-400 hover:bg-pink-50'}">
+              ${wishlisted ? '❤️' : '🤍'}
+            </button>
+            <div class="absolute inset-x-0 bottom-0 p-3 flex gap-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+              <button onclick="event.stopPropagation(); Alpine.evaluate(document.querySelector('[x-data]'), 'addToCart(products.find(p=>p.id==${p.id}))')"
+                class="flex-1 py-2.5 bg-berry-500 hover:bg-berry-600 text-white rounded-xl text-xs font-bold transition-all">
+                🛍️ Add to Bag
+              </button>
+              <button onclick="event.stopPropagation(); Alpine.evaluate(document.querySelector('[x-data]'), 'openProduct(products.find(p=>p.id==${p.id}))')"
+                class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-gray-500 hover:text-berry-500 transition-colors shadow-sm text-sm">
+                👁️
+              </button>
+            </div>
+          </div>
+          <div class="p-4" onclick="Alpine.evaluate(document.querySelector('[x-data]'), 'openProduct(products.find(p=>p.id==${p.id}))')">
+            <p class="text-xs text-berry-400 mb-1 uppercase tracking-wider">${p.category}</p>
+            <h3 class="font-display text-base text-gray-800 mb-2 group-hover:text-berry-600 transition-colors">${p.name}</h3>
+            <div class="flex items-center gap-1.5 mb-3">
+              <span class="text-yellow-400 text-xs">★★★★★</span>
+              <span class="text-xs text-gray-400">(${p.reviews})</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-berry-700">Rs. ${p.price.toLocaleString()}</span>
+              ${p.originalPrice ? `<span class="text-xs text-gray-400 line-through">Rs. ${p.originalPrice.toLocaleString()}</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    },
+  }
+}
+</script>
+
+</body>
+</html>
